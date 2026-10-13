@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Jiaqi Liu · 哈尔滨工业大学 · 基于 ICP 对齐和双向平均最近点距离的 STL 点云几何检索演示。">
+  <title>pointCloud_Demo · Jiaqi Liu</title>
+  <link rel="icon" href="icon/code.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page-shell">
+    <header class="header">
+      <h1 class="title">pointCloud_Demo: ICP-Based Point Cloud Matching for 3D Geometry Retrieval</h1>
+      <div class="authors"><a class="author" href="https://github.com/ljq13505-sudo" target="_blank" rel="noopener noreferrer">Jiaqi Liu<sup>1</sup></a></div>
+      <div class="affiliations">
+        <a class="affiliation" href="https://en.hit.edu.cn/" target="_blank" rel="noopener noreferrer">
+          <span class="affiliation-emblem"><img src="icon/HIT.png" alt="哈尔滨工业大学校徽" width="128" height="128"></span>
+          <span class="affiliation-name"><sup>1</sup>Harbin Institute of<br>Technology</span>
+        </a>
+      </div>
+    </header>
+
+    <div class="resources" aria-label="资源图标展示">
+      <div class="resource"><span class="resource-icon"><img src="icon/PDF.svg" width="92" height="92" alt="Paper 图标"></span><span class="resource-label">Paper</span></div>
+      <div class="resource"><span class="resource-icon"><img src="icon/video.svg" width="92" height="92" alt="Video 图标"></span><span class="resource-label">Video</span></div>
+      <div class="resource"><span class="resource-icon"><img src="icon/code.svg" width="92" height="92" alt="Code 图标"></span><span class="resource-label">Code</span></div>
+    </div>
+
+    <section class="section" aria-labelledby="abstract-title">
+      <h2 id="abstract-title">Abstract</h2>
+      <p>本项目展示一种基于表面点云的三维几何检索流程。输入 STL 三角网格后，按三角形面积生成采样点，统一模型的位置与尺度，以 PCA 建立初始主方向，再使用多起点 ICP 完成刚性配准。最终通过对齐后的双向平均最近点距离，衡量查询模型与候选模型的表面差异，并按距离从小到大排序。</p>
+      <p>该演示使用 CPU 计算，无需训练模型。附带的小型几何样例由程序生成，用于展示预处理、配准和排序过程。</p>
+    </section>
+
+    <section class="section" aria-labelledby="introduction-title">
+      <h2 id="introduction-title">Introduction</h2>
+      <div class="pipeline" aria-label="STL 网格、表面采样、归一化与 PCA、ICP 配准、距离排序"><span>STL 网格</span><i aria-hidden="true">→</i><span>表面采样</span><i aria-hidden="true">→</i><span>归一化与 PCA</span><i aria-hidden="true">→</i><span>ICP 配准</span><i aria-hidden="true">→</i><span>距离排序</span></div>
+      <p>面积加权的表面中心和 RMS 半径用于归一化，减少网格细分密度的影响，同时忽略绝对平移和同比例缩放。PCA 提供主轴坐标；从 24 个合法轴向旋转中选择多个初始位置，以双向最近点匹配和 SVD 刚性更新迭代求解 ICP。</p>
+      <div class="equation" role="math" aria-label="双向平均最近点距离为两方向平均最近点距离之和的一半">d(A, B) = ½ [ μ<sub>A→B</sub> + μ<sub>B→A</sub> ]</div>
+      <p>其中 μ 为一个点集到另一点集的平均最近欧氏距离。距离使用未平方的数值，单位为归一化 RMS 半径；数值越小表示表面点集越接近，分数不代表相似度百分比。</p>
+    </section>
+
+    <section class="section" aria-labelledby="results-title">
+      <h2 id="results-title">Results</h2>
+      <p>示例查询由参考表面经过旋转、平移及 1.7 倍缩放生成，并与参考表面、圆柱和扁椭球三个候选比较。每个模型采样 2048 点，ICP 使用 6 个初始位置，每个位置最多迭代 35 轮。</p>
+      <figure class="result-item"><img src="images/results.png" alt="归一化查询点云及 ICP 对齐后的三个候选点云，参考表面排名第一" width="1800" height="570" loading="lazy"><figcaption>查询与候选共享观察视角；橙色为候选点云，绿色为查询点云。图中使用缩略采样点展示。</figcaption></figure>
+      <div class="table-wrap"><table><caption>程序生成样例的距离排序</caption><thead><tr><th scope="col">排名</th><th scope="col">候选模型</th><th scope="col">双向平均最近点距离</th></tr></thead><tbody><tr><td>1</td><td>reference</td><td>5.14 × 10<sup>−8</sup></td></tr><tr><td>2</td><td>cylinder</td><td>0.127508</td></tr><tr><td>3</td><td>flat_ellipsoid</td><td>0.144818</td></tr></tbody></table></div>
+      <p class="note">样例中的对应关系是已知的，只用于检查计算流程，不代表真实检索准确率。有限起点的 ICP 可能陷入局部最优，对称结构、采样点数及随机采样也可能影响结果。</p>
+    </section>
+
+    <section class="section" aria-labelledby="usage-title">
+      <h2 id="usage-title">Usage</h2>
+      <p>下载算法仓库，在仓库根目录安装依赖并运行示例。环境、参数和输入输出说明见 <a href="https://github.com/ljq13505-sudo/pointCloud_Demo#readme" target="_blank" rel="noopener noreferrer">pointCloud_Demo README</a>。</p>
+      <pre><code>python -m pip install -r geometry_retrieval/requirements.txt
+python geometry_retrieval/compare_geometry.py</code></pre>
+      <p>结果保存为 <code>output/ranking.csv</code> 和 <code>output/results.json</code>。使用自己的 STL 时，同时传入 <code>--gallery</code> 和 <code>--query</code> 参数。</p>
+    </section>
+    <footer class="footer"><p>© 2026 Jiaqi Liu · pointCloud_Demo</p><p>Harbin Institute of Technology</p></footer>
+  </main>
+</body>
+</html>
